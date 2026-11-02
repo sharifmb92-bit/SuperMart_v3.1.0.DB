@@ -347,7 +347,7 @@
     </div>
 </div>
 
-<!-- Modal Carro Actual (v3.1.0 con Redirección a Categoría para Corrección Limpia) -->
+<!-- Modal Carro Actual -->
 <div class="modal" id="modal-desglose">
     <div class="modal-contenido">
         <div class="modal-header">
@@ -372,7 +372,7 @@
     </div>
 </div>
 
-<!-- Modal Ajustes con Selección de Idioma y Sincronización -->
+<!-- Modal Ajustes con Selección de Idioma, Sincronización y Desvinculación -->
 <div class="modal" id="modal-ajustes">
     <div class="modal-contenido">
         <div class="modal-header">
@@ -402,14 +402,15 @@
             <input type="checkbox" class="switch-input" id="switch-pasillos" onchange="toggleModoPasillos(this.checked)">
         </div>
 
-        <!-- SECCIÓN VINCULAR / COPIAR CLAVE DISPOSITIVOS -->
+        <!-- SECCIÓN VINCULAR / COPIAR Y DESVINCULAR MÓVIL -->
         <div style="background:rgba(0,0,0,0.05); padding:10px; border-radius:8px; margin-top:15px;">
             <p style="margin:0 0 6px 0; font-size:13px; font-weight:bold;" data-i18n="sync_title">📱 Sincronización entre Móviles:</p>
             <input type="text" id="clave-uid-display" readonly style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; font-family:monospace; font-size:12px; margin-bottom:8px; box-sizing:border-box;">
-            <div style="display:flex; gap:6px;">
+            <div style="display:flex; gap:6px; margin-bottom:6px;">
                 <button class="btn-mini" style="flex:1; background:var(--azul); color:white;" onclick="copiarClaveUID()"><i class="fas fa-copy"></i> <span data-i18n="btn_copy_key">Copiar Clave</span></button>
                 <button class="btn-mini" style="flex:1; background:var(--verde); color:white;" onclick="vincularOtraClave()"><i class="fas fa-link"></i> <span data-i18n="btn_link_device">Vincular Móvil</span></button>
             </div>
+            <button class="btn-mini" style="width:100%; background:var(--rojo); color:white; padding:8px;" onclick="desvincularDispositivo()"><i class="fas fa-unlink"></i> <span data-i18n="btn_unlink_device">Desvincular Dispositivo</span></button>
         </div>
 
         <div style="background:rgba(0,0,0,0.05); padding:10px; border-radius:8px; margin-top:12px;">
@@ -457,7 +458,6 @@
         localStorage.setItem('supermart_uid', userId);
     }
 
-    // Guardar en la nube los cambios locales
     window.sincronizarCloud = async function(clave, valor) {
         try {
             await setDoc(doc(dbCloud, "usuarios_supermart", userId), {
@@ -469,7 +469,6 @@
         }
     };
 
-    // Escuchar en TIEMPO REAL los cambios realizados desde cualquier móvil vinculado
     window.restaurarNube = function() {
         try {
             const docRef = doc(dbCloud, "usuarios_supermart", userId);
@@ -523,7 +522,6 @@
 </script>
 
 <script>
-    // --- AUTO-LIMPIEZA FORZADA DE CACHÉ VIEJA Y URL (v3.1.0) ---
     (function() {
         if (window.location.hash) {
             history.replaceState(null, null, window.location.pathname + window.location.search);
@@ -597,7 +595,7 @@
             settings_title: "⚙️ Configuración", lang_select_label: "🌐 Idioma de la Aplicación:", budget_limit_label: "Límite de Presupuesto (€):",
             btn_save_limit: "Guardar Límite", btn_buy_coffee: "☕ Invítame a un café", btn_view_hist: "📜 Ver Historial de Compras Guardadas",
             danger_zone: "⚠️ ZONA DE PELIGRO", btn_clear_hist: "Borrar Historial Completo", switch_aisles_label: "🛒 Ordenar por Pasillos / Zonas:",
-            sync_title: "📱 Sincronización entre Móviles:", btn_copy_key: "Copiar Clave", btn_link_device: "Vincular Móvil",
+            sync_title: "📱 Sincronización entre Móviles:", btn_copy_key: "Copiar Clave", btn_link_device: "Vincular Móvil", btn_unlink_device: "Desvincular Dispositivo",
             zone_entrance: "Zona 1: Entrada y Frescos", zone_dry: "Zona 2: Pasillos Secos (Despensa)", zone_cold: "Zona 3: Murales de Frío & Carnes", zone_home: "Zona 4: Droguería y Cuidado Personal", zone_checkout: "Zona 5: Salida & Congelados"
         },
         en: {
@@ -621,7 +619,7 @@
             settings_title: "⚙️ Settings", lang_select_label: "🌐 App Language:", budget_limit_label: "Budget Limit (€):",
             btn_save_limit: "Save Limit", btn_buy_coffee: "☕ Buy me a coffee", btn_view_hist: "📜 View Saved History",
             danger_zone: "⚠️ DANGER ZONE", btn_clear_hist: "Clear Complete History", switch_aisles_label: "🛒 Sort by Aisles / Zones:",
-            sync_title: "📱 Device Sync:", btn_copy_key: "Copy Key", btn_link_device: "Link Device",
+            sync_title: "📱 Device Sync:", btn_copy_key: "Copy Key", btn_link_device: "Link Device", btn_unlink_device: "Unlink Device",
             zone_entrance: "Zone 1: Entrance & Fresh", zone_dry: "Zone 2: Dry Aisles", zone_cold: "Zone 3: Cold & Meats", zone_home: "Zone 4: Cleaning & Care", zone_checkout: "Zone 5: Checkout & Frozen"
         },
         fr: {
@@ -635,7 +633,7 @@
             calc_title: "🧮 Calculatrice", calc_use: "📋 Utiliser", offer_title: "⚖️ Calculateur d'offre:", price_label: "Prix:", grams_label: "Grammes:", units_label: "Qté:",
             frequents_sub: "⚡ Produits fréquents:", add_product_sub: "📝 Ajouter produit:", name_ph: "Nom", price_ph: "Prix €", btn_save_list: "Enregistrer",
             cart_title: "🛒 Produits dans le panier", btn_share_cart: "Partager sur WhatsApp", hist_title: "📜 Historique", settings_title: "⚙️ Paramètres",
-            lang_select_label: "🌐 Langue de l'application:", budget_limit_label: "Limite de budget (€):", btn_save_limit: "Enregistrer la limite", btn_buy_coffee: "☕ Offrez-moi un café", btn_view_hist: "📜 Voir l'historique", danger_zone: "⚠️ ZONE DE DANGER", btn_clear_hist: "Effacer l'historique", switch_aisles_label: "🛒 Trier par rayons:", sync_title: "📱 Synchronisation mobile:", btn_copy_key: "Copier clé", btn_link_device: "Lier appareil",
+            lang_select_label: "🌐 Langue de l'application:", budget_limit_label: "Limite de budget (€):", btn_save_limit: "Enregistrer la limite", btn_buy_coffee: "☕ Offrez-moi un café", btn_view_hist: "📜 Voir l'historique", danger_zone: "⚠️ ZONE DE DANGER", btn_clear_hist: "Effacer l'historique", switch_aisles_label: "🛒 Trier par rayons:", sync_title: "📱 Synchronisation mobile:", btn_copy_key: "Copier clé", btn_link_device: "Lier appareil", btn_unlink_device: "Délier appareil",
             zone_entrance: "Zone 1: Entrée & Frais", zone_dry: "Zone 2: Épicerie", zone_cold: "Zone 3: Froid & Viandes", zone_home: "Zone 4: Entretien", zone_checkout: "Zone 5: Caisse & Surgelés"
         },
         it: {
@@ -648,7 +646,7 @@
             calc_title: "🧮 Calcolatrice", calc_use: "📋 Usa", offer_title: "⚖️ Calcolatore Offerta:", price_label: "Prezzo:", grams_label: "Grammi:", units_label: "Qtà:",
             frequents_sub: "⚡ Prodotti Frequenti:", add_product_sub: "📝 Aggiungi Prodotto:", name_ph: "Nome", price_ph: "Prezzo €", btn_save_list: "Salva in Lista",
             cart_title: "🛒 Prodotti nel Carrello", btn_share_cart: "Condividi su WhatsApp", hist_title: "📜 Cronologia", settings_title: "⚙️ Impostazioni",
-            lang_select_label: "🌐 Lingua dell'App:", budget_limit_label: "Limite Budget (€):", btn_save_limit: "Salva Limite", btn_buy_coffee: "☕ Offrimi un caffè", btn_view_hist: "📜 Vedi Cronologia", danger_zone: "⚠️ ZONA PERICOLO", btn_clear_hist: "Cancella Cronologia", switch_aisles_label: "🛒 Ordina per Corsie:", sync_title: "📱 Sincronizzazione:", btn_copy_key: "Copia Chiave", btn_link_device: "Collega Dispositivo",
+            lang_select_label: "🌐 Lingua dell'App:", budget_limit_label: "Limite Budget (€):", btn_save_limit: "Salva Limite", btn_buy_coffee: "☕ Offrimi un caffè", btn_view_hist: "📜 Vedi Cronologia", danger_zone: "⚠️ ZONA PERICOLO", btn_clear_hist: "Cancella Cronologia", switch_aisles_label: "🛒 Ordina per Corsie:", sync_title: "📱 Sincronizzazione:", btn_copy_key: "Copia Chiave", btn_link_device: "Collega Dispositivo", btn_unlink_device: "Scollega Dispositivo",
             zone_entrance: "Zona 1: Ingresso e Freschi", zone_dry: "Zona 2: Corsie Secche", zone_cold: "Zona 3: Freddo e Carne", zone_home: "Zona 4: Pulizia", zone_checkout: "Zona 5: Uscita e Surgelati"
         },
         de: {
@@ -661,7 +659,7 @@
             calc_title: "🧮 Rechner", calc_use: "📋 Nutzen", offer_title: "⚖️ Angebotsrechner:", price_label: "Preis:", grams_label: "Gramm:", units_label: "Menge:",
             frequents_sub: "⚡ Häufige Produkte:", add_product_sub: "📝 Produkt hinzufügen:", name_ph: "Name", price_ph: "Preis €", btn_save_list: "Speichern",
             cart_title: "🛒 Artikel im Warenkorb", btn_share_cart: "Auf WhatsApp teilen", hist_title: "📜 Verlauf", settings_title: "⚙️ Einstellungen",
-            lang_select_label: "🌐 App-Sprache:", budget_limit_label: "Budgetlimit (€):", btn_save_limit: "Limit Speichern", btn_buy_coffee: "☕ Kaufe mir einen Kaffee", btn_view_hist: "📜 Verlauf Anzeigen", danger_zone: "⚠️ GEFAHRENZONE", btn_clear_hist: "Verlauf Löschen", switch_aisles_label: "🛒 Nach Gängen sortieren:", sync_title: "📱 Synchronisation:", btn_copy_key: "Schlüssel kopieren", btn_link_device: "Gerät verknüpfen",
+            lang_select_label: "🌐 App-Sprache:", budget_limit_label: "Budgetlimit (€):", btn_save_limit: "Limit Speichern", btn_buy_coffee: "☕ Kaufe mir einen Kaffee", btn_view_hist: "📜 Verlauf Anzeigen", danger_zone: "⚠️ GEFAHRENZONE", btn_clear_hist: "Verlauf Löschen", switch_aisles_label: "🛒 Nach Gängen sortieren:", sync_title: "📱 Synchronisation:", btn_copy_key: "Schlüssel kopieren", btn_link_device: "Gerät verknüpfen", btn_unlink_device: "Gerät trennen",
             zone_entrance: "Zone 1: Eingang & Frische", zone_dry: "Zone 2: Vorratskammer", zone_cold: "Zone 3: Kühlung & Fleisch", zone_home: "Zone 4: Reinigung", zone_checkout: "Zone 5: Kasse & Tiefkühl"
         },
         pt: {
@@ -674,7 +672,7 @@
             calc_title: "🧮 Calculadora", calc_use: "📋 Usar", offer_title: "⚖️ Calculadora de Oferta:", price_label: "Preço:", grams_label: "Gramas:", units_label: "Qtd:",
             frequents_sub: "⚡ Produtos Frequentes:", add_product_sub: "📝 Adicionar Produto:", name_ph: "Nome", price_ph: "Preço €", btn_save_list: "Guardar na Lista",
             cart_title: "🛒 Produtos no Carrinho", btn_share_cart: "Partilhar no WhatsApp", hist_title: "📜 Histórico", settings_title: "⚙️ Configurações",
-            lang_select_label: "🌐 Idioma da Aplicação:", budget_limit_label: "Limite de Orçamento (€):", btn_save_limit: "Guardar Limite", btn_buy_coffee: "☕ Pague-me um café", btn_view_hist: "📜 Ver Histórico", danger_zone: "⚠️ ZONA DE PERIGO", btn_clear_hist: "Limpar Histórico Completo", switch_aisles_label: "🛒 Ordenar por Corredores:", sync_title: "📱 Sincronização:", btn_copy_key: "Copiar Chave", btn_link_device: "Vincular Dispositivo",
+            lang_select_label: "🌐 Idioma da Aplicação:", budget_limit_label: "Limite de Orçamento (€):", btn_save_limit: "Guardar Limite", btn_buy_coffee: "☕ Pague-me um café", btn_view_hist: "📜 Ver Histórico", danger_zone: "⚠️ ZONA DE PERIGO", btn_clear_hist: "Limpar Histórico Completo", switch_aisles_label: "🛒 Ordenar por Corredores:", sync_title: "📱 Sincronização:", btn_copy_key: "Copiar Chave", btn_link_device: "Vincular Dispositivo", btn_unlink_device: "Desvincular Dispositivo",
             zone_entrance: "Zona 1: Entrada e Frescos", zone_dry: "Zona 2: Corredores Secos", zone_cold: "Zona 3: Frio e Carnes", zone_home: "Zona 4: Limpeza", zone_checkout: "Zona 5: Saída e Congelados"
         },
         ca: {
@@ -687,7 +685,7 @@
             calc_title: "🧮 Calculadora", calc_use: "📋 Usar", offer_title: "⚖️ Calculador d'Oferta:", price_label: "Preu:", grams_label: "Grams:", units_label: "Uts:",
             frequents_sub: "⚡ Productes Freqüents:", add_product_sub: "📝 Apuntar Producte:", name_ph: "Nom", price_ph: "Preu €", btn_save_list: "Guardar a la Llista",
             cart_title: "🛒 Productes a la Cistella", btn_share_cart: "Compartir per WhatsApp", hist_title: "📜 Historial de Compres", settings_title: "⚙️ Configuració",
-            lang_select_label: "🌐 Idioma de l'Aplicació:", budget_limit_label: "Límit de Pressupost (€):", btn_save_limit: "Guardar Límit", btn_buy_coffee: "☕ Convida'm a un cafè", btn_view_hist: "📜 Veure Historial Guardat", danger_zone: "⚠️ ZONA DE PERILL", btn_clear_hist: "Esborrar Historial Complet", switch_aisles_label: "🛒 Ordenar per Passadissos:", sync_title: "📱 Sincronització Dispositius:", btn_copy_key: "Copiar Clau", btn_link_device: "Vincular Mòbil",
+            lang_select_label: "🌐 Idioma de l'Aplicació:", budget_limit_label: "Límit de Pressupost (€):", btn_save_limit: "Guardar Límit", btn_buy_coffee: "☕ Convida'm a un cafè", btn_view_hist: "📜 Veure Historial Guardat", danger_zone: "⚠️ ZONA DE PERILL", btn_clear_hist: "Esborrar Historial Complet", switch_aisles_label: "🛒 Ordenar per Passadissos:", sync_title: "📱 Sincronització Dispositius:", btn_copy_key: "Copiar Clau", btn_link_device: "Vincular Mòbil", btn_unlink_device: "Desvincular Dispositiu",
             zone_entrance: "Zona 1: Entrada i Frescos", zone_dry: "Zona 2: Passadissos Secs", zone_cold: "Zona 3: Murals de Fred i Carna", zone_home: "Zona 4: Neteja", zone_checkout: "Zona 5: Sortida i Congelats"
         }
     };
@@ -836,14 +834,16 @@
         setTimeout(() => { t.style.display = 'none'; }, 1800);
     }
 
+    // --- LÓGICA DE SUMAR ACTUALIZADA: RECALCULA EL PRECIO UNITARIO SI YA ESTÁ EN EL CARRO ---
     function sumar(nombre, precio, categoria) {
         const existente = carroActual.find(item => item.nombre.toLowerCase() === nombre.toLowerCase());
         if (existente) {
             const numUnidadesSumar = uds;
-            if (!confirm(`⚠️ "${nombre}" ${langKey === 'es' ? 'ya está en el carro' : 'is already in cart'} (${existente.unidades}x).\n\n${langKey === 'es' ? '¿Quieres sumar' : 'Add'} ${numUnidadesSumar} ${langKey === 'es' ? 'unidad(es) más?' : 'more unit(s)?'}`)) {
+            if (!confirm(`⚠️ "${nombre}" ${langKey === 'es' ? 'ya está en el carro' : 'is already in cart'} (${existente.unidades}x).\n\n${langKey === 'es' ? '¿Quieres sumar' : 'Add'} ${numUnidadesSumar} ${langKey === 'es' ? 'unidad(es) más con precio' : 'more unit(s) with price'} ${precio.toFixed(2)}€?`)) {
                 return;
             }
             existente.unidades += numUnidadesSumar;
+            existente.precioUnitario = precio || 0;
             existente.total = existente.unidades * existente.precioUnitario;
             mostrarToast(`✓ ¡Sumado +${numUnidadesSumar} a ${nombre}!`);
         } else {
@@ -890,7 +890,6 @@
 
     function calcularTotal() { return carroActual.reduce((acc, item) => acc + item.total, 0); }
 
-    // --- LÓGICA V3.1.0 CORREGIDA PARA DETECTAR 0.00€ EN CASA/FRECUENTES ---
     function actualizar() {
         const total = calcularTotal();
         guardarDatosDB('carro_temp', carroActual);
@@ -914,14 +913,12 @@
         const subtotales = {};
         const categoriasConCero = new Set();
 
-        // 1. Revisar productos a 0.00€ en la lista de frecuentes (desde casa)
         for (let cat in habituales) {
             if (habituales[cat].some(p => p.precio === 0)) {
                 categoriasConCero.add(cat);
             }
         }
 
-        // 2. Sumar subtotales del carro y revisar si hay ceros en carro
         carroActual.forEach(item => {
             if (item.precioUnitario === 0 || item.total === 0) {
                 categoriasConCero.add(item.categoria);
@@ -929,7 +926,6 @@
             subtotales[item.categoria] = (subtotales[item.categoria] || 0) + item.total;
         });
         
-        // 3. Pintar en ROJO la tarjeta de categoría si contiene ceros
         document.querySelectorAll('.subtotal-tag').forEach(tag => {
             const cat = tag.id.replace('sub-', '').replace('subp-', '');
             if (categoriasConCero.has(cat)) {
@@ -962,7 +958,6 @@
         if(el) el.innerHTML = `📊 ${langKey === 'es' ? 'Gasto acumulado este mes' : 'Total spent this month'}: <strong>${totalMes.toFixed(2)}€</strong>`;
     }
 
-    // BUSCADOR CORREGIDO V3.1.0: Abre categoría directamente al tocar la sugerencia
     function filtrarProductos() {
         const rawTxt = document.getElementById('buscador').value;
         const txt = rawTxt.toLowerCase().trim();
@@ -1069,8 +1064,10 @@
         renderFrecuentes();
     }
 
+    // --- EDICIÓN EN FRECUENTES CON RECALCULO AUTOMÁTICO DEL CARRO ---
     function editarNombreYPrecioHabitual(index) {
         const prod = habituales[categoriaActiva][index];
+        const nombreAnterior = prod.nombre;
         const nuevoNombre = prompt(`${langKey === 'es' ? 'Corregir nombre del producto' : 'Edit product name'}:`, prod.nombre);
         if (nuevoNombre === null || nuevoNombre.trim() === '') return;
 
@@ -1086,6 +1083,16 @@
         prod.nombre = nuevoNombre.trim();
         prod.precio = nuevoPrecio;
         guardarDatosDB('habituales_v130', habituales);
+
+        // Actualizar automáticamente si ya existe dentro del carro activo
+        const enCarro = carroActual.find(item => item.nombre.toLowerCase() === nombreAnterior.toLowerCase());
+        if (enCarro) {
+            enCarro.nombre = prod.nombre;
+            enCarro.precioUnitario = prod.precio;
+            enCarro.total = enCarro.unidades * enCarro.precioUnitario;
+            guardarDatosDB('carro_temp', carroActual);
+        }
+
         renderFrecuentes();
         actualizar();
         mostrarToast(`✏️ ${langKey === 'es' ? 'Actualizado:' : 'Updated:'} ${prod.nombre} (${nuevoPrecio.toFixed(2)}€)`);
@@ -1211,7 +1218,6 @@
 
     function cerrarModal(id) { document.getElementById(id).classList.remove('active'); }
 
-    // RENDERIZADO DEL CARRO V3.1.0: Limpio, con check/tachado y redirección a categoría
     function renderDesglose() {
         const cont = document.getElementById('lista-carro');
         if(carroActual.length === 0) { cont.innerHTML = `<p style='text-align:center;'>${langKey === 'es' ? 'El carro está vacío.' : 'Cart is empty.'}</p>`; return; }
@@ -1326,6 +1332,15 @@
         if(nuevaClave && nuevaClave.trim().length > 5) {
             localStorage.setItem('supermart_uid', nuevaClave.trim());
             alert("✅ Móvil vinculado con éxito. Reiniciando datos desde la nube...");
+            location.reload();
+        }
+    }
+
+    // --- FUNCIÓN DE DESVINCULACIÓN INTEGRADA ---
+    function desvincularDispositivo() {
+        if(confirm(langKey === 'es' ? "¿Quieres desvincular este dispositivo?\nSe generará una clave UID totalmente nueva e independiente." : "Unlink this device?\nA completely new independent UID key will be generated.")) {
+            localStorage.removeItem('supermart_uid');
+            alert("🔄 Dispositivo desvinculado. Reiniciando app para generar un nuevo código único...");
             location.reload();
         }
     }
