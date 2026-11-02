@@ -68,9 +68,9 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 8px; }
         
         /* Estilos v3.1.0 para productos en el carro */
-        .item-carro-v31 { display: flex; flex-direction: column; gap: 6px; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1); }
-        .item-carro-v31.completado { background: rgba(39, 174, 96, 0.15); border-left: 4px solid var(--verde); padding-left: 8px; border-radius: 6px; }
-        .item-carro-v31.completado strong { text-decoration: line-through; color: var(--gris); }
+        .item-carro { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.08); transition: 0.2s; }
+        .item-carro.completado { background: rgba(39, 174, 96, 0.15); border-left: 4px solid var(--verde); padding-left: 6px; border-radius: 6px; }
+        .item-carro.completado strong { text-decoration: line-through; color: var(--gris); }
         .btn-check-carro { background: rgba(0,0,0,0.1); border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 15px; margin-right: 8px; font-weight: bold; }
         .btn-check-carro.activo { background: var(--verde); color: white; }
 
@@ -347,7 +347,7 @@
     </div>
 </div>
 
-<!-- Modal Carro Actual (v3.1.0 con Control Directo de Unidades y Precio) -->
+<!-- Modal Carro Actual (v3.1.0 con Redirección a Categoría para Corrección Limpia) -->
 <div class="modal" id="modal-desglose">
     <div class="modal-contenido">
         <div class="modal-header">
@@ -853,6 +853,7 @@
 
     function calcularTotal() { return carroActual.reduce((acc, item) => acc + item.total, 0); }
 
+    // --- LÓGICA V3.1.0 CORREGIDA PARA DETECTAR 0.00€ EN CASA/FRECUENTES ---
     function actualizar() {
         const total = calcularTotal();
         guardarDatosDB('carro_temp', carroActual);
@@ -873,23 +874,28 @@
             hDiv.innerHTML = `<b>${langKey === 'es' ? 'Última compra:' : 'Last purchase:'}</b> ${langKey === 'es' ? 'Sin compras recientes guardadas.' : 'No recent saved purchases.'}`;
         }
 
-        // LÓGICA V3.1.0: Detector 0.00€ comprobando la Lista de Frecuentes
         const subtotales = {};
-        const categoriasConCeroEnLista = new Set();
+        const categoriasConCero = new Set();
 
+        // 1. Revisar productos a 0.00€ en la lista de frecuentes (desde casa)
         for (let cat in habituales) {
             if (habituales[cat].some(p => p.precio === 0)) {
-                categoriasConCeroEnLista.add(cat);
+                categoriasConCero.add(cat);
             }
         }
 
+        // 2. Sumar subtotales del carro y revisar si hay ceros en carro
         carroActual.forEach(item => {
+            if (item.precioUnitario === 0 || item.total === 0) {
+                categoriasConCero.add(item.categoria);
+            }
             subtotales[item.categoria] = (subtotales[item.categoria] || 0) + item.total;
         });
         
+        // 3. Pintar en ROJO la tarjeta de categoría si contiene ceros
         document.querySelectorAll('.subtotal-tag').forEach(tag => {
             const cat = tag.id.replace('sub-', '').replace('subp-', '');
-            if (categoriasConCeroEnLista.has(cat)) {
+            if (categoriasConCero.has(cat)) {
                 tag.innerText = '⚠️ 0.00€';
                 tag.style.color = 'var(--rojo)';
                 tag.style.background = 'rgba(192, 57, 43, 0.25)';
@@ -919,7 +925,7 @@
         if(el) el.innerHTML = `📊 ${langKey === 'es' ? 'Gasto acumulado este mes' : 'Total spent this month'}: <strong>${totalMes.toFixed(2)}€</strong>`;
     }
 
-    // LÓGICA V3.1.0 BUSCADOR CORREGIDO
+    // BUSCADOR CORREGIDO V3.1.0: Abre categoría directamente al tocar la sugerencia
     function filtrarProductos() {
         const rawTxt = document.getElementById('buscador').value;
         const txt = rawTxt.toLowerCase().trim();
@@ -1044,6 +1050,7 @@
         prod.precio = nuevoPrecio;
         guardarDatosDB('habituales_v130', habituales);
         renderFrecuentes();
+        actualizar();
         mostrarToast(`✏️ ${langKey === 'es' ? 'Actualizado:' : 'Updated:'} ${prod.nombre} (${nuevoPrecio.toFixed(2)}€)`);
     }
 
@@ -1068,6 +1075,7 @@
         inputNombre.value = '';
         inputPrecio.value = '';
         renderFrecuentes();
+        actualizar();
         mostrarToast(precio > 0 ? `📌 ${nombre} ${langKey === 'es' ? 'guardado en lista' : 'saved to list'}` : `📌 ${nombre} ${langKey === 'es' ? 'apuntado (0.00€)' : 'added (0.00€)'}`);
     }
 
@@ -1075,6 +1083,7 @@
         habituales[categoriaActiva].splice(index, 1);
         guardarDatosDB('habituales_v130', habituales);
         renderFrecuentes();
+        actualizar();
     }
 
     function calcInput(val) {
@@ -1165,7 +1174,7 @@
 
     function cerrarModal(id) { document.getElementById(id).classList.remove('active'); }
 
-    // RENDERIZADO V3.1.0 DEL MODAL CARRO CON EDICIÓN DIRECTA DE UNIDADES Y PRECIO
+    // RENDERIZADO DEL CARRO V3.1.0: Limpio, con check/tachado y redirección a categoría
     function renderDesglose() {
         const cont = document.getElementById('lista-carro');
         if(carroActual.length === 0) { cont.innerHTML = `<p style='text-align:center;'>${langKey === 'es' ? 'El carro está vacío.' : 'Cart is empty.'}</p>`; return; }
@@ -1181,61 +1190,24 @@
         `;
 
         cont.innerHTML = htmlResumen + carroActual.map(item => `
-            <div class="item-carro-v31 ${item.cogido ? 'completado' : ''}">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="display:flex; align-items:center;">
-                        <button class="btn-check-carro ${item.cogido ? 'activo' : ''}" onclick="toggleCogido(${item.id})">${item.cogido ? '✓' : '◯'}</button>
-                        <strong>${item.nombre}</strong>
+            <div class="item-carro ${item.cogido ? 'completado' : ''}">
+                <div style="display:flex; align-items:center; flex:1; cursor:pointer;" onclick="irACategoriaDesdeCarro('${item.categoria}')">
+                    <button class="btn-check-carro ${item.cogido ? 'activo' : ''}" onclick="event.stopPropagation(); toggleCogido(${item.id});" title="Marcar como metido en el carro">
+                        ${item.cogido ? '✓' : '◯'}
+                    </button>
+                    <div>
+                        <strong>${item.nombre}</strong> <small>(${item.unidades}x ${item.precioUnitario > 0 ? item.precioUnitario.toFixed(2) + '€' : '⚠️ 0.00€'})</small><br>
+                        <span style="color:var(--azul); font-weight:bold;">${item.total.toFixed(2)}€</span>
                     </div>
-                    <button class="btn-mini" style="background:var(--rojo); color:white; padding:4px 8px;" onclick="eliminarDelCarro(${item.id})">🗑️</button>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; padding-left:36px; font-size:12px;">
-                    <span>${langKey === 'es' ? 'Precio ud:' : 'Unit price:'} <strong style="color:${item.precioUnitario === 0 ? 'var(--rojo)' : 'var(--texto)'}">${item.precioUnitario > 0 ? item.precioUnitario.toFixed(2) + '€' : '⚠️ 0.00€'}</strong></span>
-                    <button class="btn-mini" style="background:rgba(0,0,0,0.1); padding:3px 8px; font-size:11px;" onclick="editarPrecioDirectoCarro(${item.id})">✏️ ${langKey === 'es' ? 'Editar precio' : 'Edit price'}</button>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; padding-left:36px;">
-                    <div style="display:flex; align-items:center; gap:8px; background:rgba(0,0,0,0.06); padding:4px 8px; border-radius:8px;">
-                        <button class="btn-mini" style="padding:2px 8px; font-weight:bold;" onclick="cambiarUnidadesCarro(${item.id}, -1)">➖</button>
-                        <span style="font-weight:bold; min-width:20px; text-align:center;">${item.unidades}</span>
-                        <button class="btn-mini" style="padding:2px 8px; font-weight:bold;" onclick="cambiarUnidadesCarro(${item.id}, 1)">➕</button>
-                    </div>
-                    <span style="color:var(--azul); font-weight:bold;">Subtotal: ${item.total.toFixed(2)}€</span>
-                </div>
+                <button class="btn-mini" style="background:var(--rojo); color:white;" onclick="eliminarDelCarro(${item.id})">🗑️</button>
             </div>
         `).join('');
     }
 
-    function cambiarUnidadesCarro(id, cambio) {
-        const item = carroActual.find(p => p.id === id);
-        if (item) {
-            item.unidades += cambio;
-            if (item.unidades <= 0) { eliminarDelCarro(id); return; }
-            item.total = item.unidades * item.precioUnitario;
-            actualizar();
-            renderDesglose();
-        }
-    }
-
-    function editarPrecioDirectoCarro(id) {
-        const item = carroActual.find(p => p.id === id);
-        if (!item) return;
-
-        const nuevoPrecioStr = prompt(`${langKey === 'es' ? 'Actualizar precio para' : 'Update price for'} "${item.nombre}":`, item.precioUnitario > 0 ? item.precioUnitario.toFixed(2) : '0.00');
-        if (nuevoPrecioStr === null) return;
-
-        const nuevoPrecio = parseFloat(nuevoPrecioStr.replace(',', '.'));
-        if (isNaN(nuevoPrecio) || nuevoPrecio < 0) return;
-
-        item.precioUnitario = nuevoPrecio;
-        item.total = item.unidades * nuevoPrecio;
-
-        if (habituales[item.categoria]) {
-            const hab = habituales[item.categoria].find(p => p.nombre.toLowerCase() === item.nombre.toLowerCase());
-            if (hab) { hab.precio = nuevoPrecio; guardarDatosDB('habituales_v130', habituales); }
-        }
-
-        actualizar();
-        renderDesglose();
+    function irACategoriaDesdeCarro(categoria) {
+        cerrarModal('modal-desglose');
+        abrirCategoria(categoria);
     }
 
     function renderHistorialDetallado() {
